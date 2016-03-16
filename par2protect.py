@@ -164,7 +164,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
                                   % (REDUNDANCY,)),
                             metavar=('N',),
                             type=int,
-                            nargs=1,
                             default=REDUNDANCY)
         parser.add_argument("-n", "--no-update",
                             help="dont update par2 and checksum ",
