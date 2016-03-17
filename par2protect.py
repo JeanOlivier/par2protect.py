@@ -80,7 +80,8 @@ def par2protect(directory,
             oldcd = os.getcwd()
             os.chdir(root)
             try:
-                oval = open('.cksum', 'rb').read(8)
+                with open('.cksum','rb') as f:
+                    oval = f.read(8)
             except IOError:
                 oval = ""
             nval = "%08x" % (cksum(files),)
@@ -105,7 +106,8 @@ def par2protect(directory,
                         subprocess.check_call(["par2", "c", '-n1', "-r%d" % redundancy,
                                                ".cksum.par2"] + files,
                                               stdout=out, stderr=err)
-                        open('.cksum', 'wb').write(nval)
+                        with open('.cksum', 'wb') as f:
+                            f.write(nval)
                         print "par2protect: %s: par2 and checksum updated" % (root, )
                 except subprocess.CalledProcessError:
                     sys.stderr.write(
