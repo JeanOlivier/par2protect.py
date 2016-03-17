@@ -148,6 +148,7 @@ def _par2protect(directory,
     '''
     Verify the checksums
     '''
+    mode = set(mode if isinstance(mode,(list,tuple)) else [mode])
     if not verbose:
         out = open(os.devnull, 'w')
         err = out
@@ -167,13 +168,14 @@ def _par2protect(directory,
             files = [f for f in files if not exclude_reg.search(f) ]
             excluded = list((set(_tmp) - set(files)))
             if len(excluded):
-                print "%s: excluded files:" % (root, ), \
+                print "{}: excluded files:".format(root), \
                       ', '.join(excluded)
         oldcd = os.getcwd()
         os.chdir(root)
 
-        if mode.lower() in ['v', 'verify']:
+        if not mode.isdisjoint(set(['v', 'verify'])):
             _verify_dir(root, dirs, files)
+
 
     os.chdir(original_cwd)
 
@@ -181,8 +183,8 @@ def _par2protect(directory,
 def _verify_dir(root, dirs, files):
     if len(files) > 0:
         if not os.path.isfile('.cksum'):
-            print "verify:", colored("Missing","yellow"), \
-                            "adler32 checksums for %s" % (root, )
+            print "verify:", colored("MISSING","yellow"), \
+                            "adler32 checksums for {}".format(root)
         else:
             try:
                 with open('.cksum', 'rb') as f:
@@ -190,13 +192,16 @@ def _verify_dir(root, dirs, files):
                 nval = "%08x" % (cksum(files),)
                 if nval != oval and len(files):
                     print "verify:", colored(" WRONG ","red"), \
-                            "adler32 checksums for %s" % (root, )
+                            "adler32 checksums for {}".format(root)
                 else:
                     print "verify:", colored("Correct", "green"), \
-                            "adler32 checksums for %s" % (root, )
+                            "adler32 checksums for {}".format(root)
             except IOError:
-                print "verify: there was an error reading %s/.cksum"\
-                        % (root, )
+                print "verify: there was an error reading "\
+                        "{}/.cksum".format(root)
+
+def _repair_dir(root, dirs, files):
+    pass
 
 
 
