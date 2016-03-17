@@ -119,6 +119,93 @@ def par2protect(directory,
 
             os.chdir(oldcd)
 
+# Experimental functions follow
+try :
+    from termcolor import colored
+except:
+    colored = lambda x, *args, **kwargs:x
+
+def cksum(files):
+    '''
+    Compute adler32 cksum of a list of files
+    '''
+    val = 0
+    for _fname in sorted(files):
+        with open(_fname, 'rb') as _fdes:
+            buf = ' '
+            while len(buf) > 0:
+                buf = _fdes.read(1<<20)
+                val = zlib.adler32(buf, val)
+    return ctypes.c_uint32(val).value
+
+exclude_reg = re.compile(r'\.[1-9]+[0-9]*$') # par2 repaired files end with .N
+
+def _par2protect(directory,
+                mode,
+                redundancy       = 10,
+                exclude_repaired = True,
+                verbose          = False):
+    '''
+    Verify the checksums
+    '''
+    if not verbose:
+        out = open(os.devnull, 'w')
+        err = out
+    else:
+        out = None
+        err = None
+
+    original_cwd = os.getcwd()
+
+    # Walk recursively in the directory tree
+    for root, dirs, files in os.walk(directory):
+        files = [f for f in files if not f[0] == '.']
+        dirs[:] = [d for d in dirs if not d[0] == '.']
+
+        if exclude_repaired:
+            _tmp = files
+            files = [f for f in files if not exclude_reg.search(f) ]
+            excluded = list((set(_tmp) - set(files)))
+            if len(excluded):
+                print "%s: excluded files:" % (root, ), \
+                      ', '.join(excluded)
+        oldcd = os.getcwd()
+        os.chdir(root)
+
+        if mode.lower() in ['v', 'verify']:
+            _verify_dir(root, dirs, files)
+
+    os.chdir(original_cwd)
+
+
+def _verify_dir(root, dirs, files):
+    if len(files) > 0:
+        if not os.path.isfile('.cksum'):
+            print "verify:", colored("Missing","yellow"), \
+                            "adler32 checksums for %s" % (root, )
+        else:
+            try:
+                with open('.cksum', 'rb') as f:
+                    oval = f.read(8)
+                nval = "%08x" % (cksum(files),)
+                if nval != oval and len(files):
+                    print "verify:", colored(" WRONG ","red"), \
+                            "adler32 checksums for %s" % (root, )
+                else:
+                    print "verify:", colored("Correct", "green"), \
+                            "adler32 checksums for %s" % (root, )
+            except IOError:
+                print "verify: there was an error reading %s/.cksum"\
+                        % (root, )
+
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
 
     import sys
