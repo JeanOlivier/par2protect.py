@@ -189,6 +189,7 @@ def _par2protect(directory,
 
 
 def _create_dir(root, dirs, files, redundancy, out, err):
+    nval = None
     print "create:", colored("Creating", "yellow"), "par2 for {}".format(root)
     try:
         subprocess.check_call(
@@ -201,11 +202,10 @@ def _create_dir(root, dirs, files, redundancy, out, err):
         sys.stderr.write("create: {} to create par2\n".format(colored("Failed", "red")))
 
     except OSError:
-        sys.stderr.write(STR_PAR2_SETUP_ERROR)
-        sys.exit(1)
+        nval = None
 
-    except:
-        sys.stderr.write("There was an unknown error")
+    if nval is None:
+        sys.stderr.write(STR_PAR2_SETUP_ERROR)
         sys.exit(1)
 
     with open('.cksum', 'wb') as f:
