@@ -26,7 +26,7 @@ EXCLUDE_REPAIRED = True
 
 
 # Strings:
-STR_PAR2_SETUP_ERROR = 'Unable to run par2, is it installed and set in the PATH\n'
+STR_PAR2_SETUP_ERROR = 'Unable to run par2, is it installed and set in the PATH?\n'
 
 def par2protect(directory,
                 redundancy       = 10,
@@ -145,7 +145,7 @@ def _par2protect(directory,
                 mode,
                 redundancy       = 10,
                 exclude_repaired = True,
-                verbose          = False):
+                verbose          = True):
     '''
     Verify the checksums
     '''
@@ -177,12 +177,31 @@ def _par2protect(directory,
         if not mode.isdisjoint(set(['v', 'verify'])):
             _verify_dir(root, dirs, files)
 
+        if not mode.isdisjoint(set(['c', 'create'])):
+            _create_dir(root, dirs, files, redundancy, out, err)
+
 
     os.chdir(original_cwd)
 
 
-def _create_dir(root, dirs, files):
-    pass 
+def _create_dir(root, dirs, files, redundancy, out, err):
+    print "create:", colored("Creating", "yellow"), "par2 for {}".format(root)
+    try:
+        subprocess.check_call(
+                ["par2", "c", '-n1', "-r%d" % redundancy, ".cksum.par2"] + files,
+                stdout=out, stderr=err)
+        nval = "{:08x}".format(cksum(files))
+        print "create:", colored("Successfully", "green"), "created par2".format(root)
+    except subprocess.CalledProcessError:
+        sys.stderr.write("create: {} to create par2\n".format(colored("Failed", "red")))
+    except OSError:
+        sys.stderr.write(STR_PAR2_SETUP_ERROR)
+        sys.exit(1)
+
+    with open('.cksum', 'wb') as f:
+        f.write(nval)
+    
+     
 
 
 def _verify_dir(root, dirs, files):
@@ -194,7 +213,7 @@ def _verify_dir(root, dirs, files):
             try:
                 with open('.cksum', 'rb') as f:
                     oval = f.read(8)
-                nval = "%08x" % (cksum(files),)
+                nval = "{:08x}".format(cksum(files))
                 if nval != oval and len(files):
                     print "verify:", colored(" WRONG ","red"), \
                             "adler32 checksums for {}".format(root)
