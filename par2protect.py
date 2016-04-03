@@ -204,6 +204,10 @@ def _create_dir(root, dirs, files, redundancy, out, err):
         sys.stderr.write(STR_PAR2_SETUP_ERROR)
         sys.exit(1)
 
+    except:
+        sys.stderr.write("There was an unknown error")
+        sys.exit(1)
+
     with open('.cksum', 'wb') as f:
         f.write(nval)
     
