@@ -217,7 +217,6 @@ def _delete_dir(root, dirs, files):
 
 if __name__ == '__main__':
 
-    import sys
     import argparse
 
     def _main():
