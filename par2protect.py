@@ -173,15 +173,16 @@ def _par2protect(directory,
                       ', '.join(excluded)
         oldcd = os.getcwd()
         os.chdir(root)
-
-        if not mode.isdisjoint(set(['v', 'verify'])):
-            _verify_dir(root, dirs, files)
-
-        if not mode.isdisjoint(set(['c', 'create'])):
-            _create_dir(root, dirs, files, redundancy, out, err)
-
-        if not mode.isdisjoint(set(['c', 'repair'])):
-            _repair_dir(root, dirs, files, out, err)
+        
+        if len(files) > 0:
+            if not mode.isdisjoint(set(['v', 'verify'])):
+                _verify_dir(root, dirs, files)
+    
+            if not mode.isdisjoint(set(['c', 'repair'])):
+                _repair_dir(root, dirs, files, out, err)
+    
+            if not mode.isdisjoint(set(['c', 'create'])):
+                _create_dir(root, dirs, files, redundancy, out, err)
 
 
 
@@ -215,24 +216,23 @@ def _create_dir(root, dirs, files, redundancy, out, err):
 
 
 def _verify_dir(root, dirs, files):
-    if len(files) > 0:
-        if not os.path.isfile('.cksum'):
-            print "verify:", colored("MISSING","yellow"), \
-                            "adler32 checksums for {}".format(root)
-        else:
-            try:
-                with open('.cksum', 'rb') as f:
-                    oval = f.read(8)
-                nval = "{:08x}".format(cksum(files))
-                if nval != oval and len(files):
-                    print "verify:", colored(" WRONG ","red"), \
-                            "adler32 checksums for {}".format(root)
-                else:
-                    print "verify:", colored("Correct", "green"), \
-                            "adler32 checksums for {}".format(root)
-            except IOError:
-                print "verify: there was an error reading "\
-                        "{}/.cksum".format(root)
+    if not os.path.isfile('.cksum'):
+        print "verify:", colored("MISSING","yellow"), \
+                        "adler32 checksums for {}".format(root)
+    else:
+        try:
+            with open('.cksum', 'rb') as f:
+                oval = f.read(8)
+            nval = "{:08x}".format(cksum(files))
+            if nval != oval and len(files):
+                print "verify:", colored(" WRONG ","red"), \
+                        "adler32 checksums for {}".format(root)
+            else:
+                print "verify:", colored("Correct", "green"), \
+                        "adler32 checksums for {}".format(root)
+        except IOError:
+            print "verify: there was an error reading "\
+                    "{}/.cksum".format(root)
 
 
 def _repair_dir(root, dirs, files, out, err):
