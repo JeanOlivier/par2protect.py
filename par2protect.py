@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import re
 import zlib
 import ctypes
@@ -180,6 +181,10 @@ def _par2protect(directory,
     os.chdir(original_cwd)
 
 
+def _create_dir(root, dirs, files):
+    pass 
+
+
 def _verify_dir(root, dirs, files):
     if len(files) > 0:
         if not os.path.isfile('.cksum'):
@@ -200,14 +205,13 @@ def _verify_dir(root, dirs, files):
                 print "verify: there was an error reading "\
                         "{}/.cksum".format(root)
 
+
 def _repair_dir(root, dirs, files):
-    pass
+    pass 
 
 
-
-
-
-
+def _delete_dir(root, dirs, files):
+    pass 
 
 
 
