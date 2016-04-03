@@ -180,6 +180,10 @@ def _par2protect(directory,
         if not mode.isdisjoint(set(['c', 'create'])):
             _create_dir(root, dirs, files, redundancy, out, err)
 
+        if not mode.isdisjoint(set(['c', 'repair'])):
+            _repair_dir(root, dirs, files, out, err)
+
+
 
     os.chdir(original_cwd)
 
@@ -191,9 +195,11 @@ def _create_dir(root, dirs, files, redundancy, out, err):
                 ["par2", "c", '-n1', "-r%d" % redundancy, ".cksum.par2"] + files,
                 stdout=out, stderr=err)
         nval = "{:08x}".format(cksum(files))
-        print "create:", colored("Successfully", "green"), "created par2".format(root)
+        print "create:", colored("Successfully", "green"), "created par2"
+
     except subprocess.CalledProcessError:
         sys.stderr.write("create: {} to create par2\n".format(colored("Failed", "red")))
+
     except OSError:
         sys.stderr.write(STR_PAR2_SETUP_ERROR)
         sys.exit(1)
@@ -225,8 +231,20 @@ def _verify_dir(root, dirs, files):
                         "{}/.cksum".format(root)
 
 
-def _repair_dir(root, dirs, files):
-    pass 
+def _repair_dir(root, dirs, files, out, err):
+    print "repair:", colored("Repairing", "yellow"), "{}".format(root)
+    try:
+        subprocess.check_call(["par2", "r", ".cksum.par2"], stdout=out, stderr=err)
+        print "repair:", colored("Successfully", "green"), "repaired par2".format(root)
+
+    except subprocess.CalledProcessError:
+        sys.stderr.write("repair: {} to repair\n".format(colored("Failed", "red")))
+
+    except OSError:
+        sys.stderr.write(STR_PAR2_SETUP_ERROR)
+        sys.exit(1)
+
+    
 
 
 def _delete_dir(root, dirs, files):
