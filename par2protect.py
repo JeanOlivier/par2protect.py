@@ -193,16 +193,20 @@ def _create_dir(root, dirs, files, redundancy, out, err):
     nval = None
     print "create:", colored("Creating", "yellow"), "par2 for {}".format(root)
     try:
-        par2cmd = ["par2", "c", '-s524288','-n1', "-r%d" % redundancy, ".cksum.par2"] + files 
+        par2cmd = ["par2", "c", '-n1', "-r%d" % redundancy, ".cksum.par2"] + files 
         subprocess.check_call(par2cmd, stdout=out, stderr=err)
         nval = "{:08x}".format(cksum(files))
         print "create:", colored("Successfully", "green"), "created par2"
 
-    except subprocess.CalledProcessError:
-        sys.stderr.write("create: {} to create par2\n".format(colored("Failed", "red")))
+    except:
+        try:
+            par2cmd = ["par2", "c", '-s524288','-n1', "-r%d" % redundancy, ".cksum.par2"] + files 
+            subprocess.check_call(par2cmd, stdout=out, stderr=err)
+            nval = "{:08x}".format(cksum(files))
+            print "create:", colored("Successfully", "green"), "created par2"
 
-    except OSError:
-        nval = None
+        except subprocess.CalledProcessError:
+            sys.stderr.write("create: {} to create par2\n".format(colored("Failed", "red")))
 
     if nval is None:
         sys.stderr.write(STR_PAR2_SETUP_ERROR)
@@ -211,7 +215,6 @@ def _create_dir(root, dirs, files, redundancy, out, err):
     with open('.cksum', 'wb') as f:
         f.write(nval)
     
-     
 
 
 def _verify_dir(root, dirs, files):
